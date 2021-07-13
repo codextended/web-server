@@ -4,6 +4,8 @@ import path, { dirname } from 'path';
 import express from 'express';
 import hbs from 'hbs';
 
+import { weather } from './utils/weather.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -45,6 +47,31 @@ app.get('/about', (req, res) => {
     });
 });
 
+app.get('/weather', (req, res) => {
+    if (!req.query.address) {
+        return res.send({
+            error: "You must provide an address."
+        });
+    }
+
+    weather(req.query.address, (error, { currentTemp } = {}) => {
+        if (error) {
+            return res.send({ error });
+        }
+
+        res.send({
+            currentTemp,
+            address: req.query.address
+        });
+    });
+
+    // res.send({
+    //     forecast: "It is raining",
+    //     location: "Port-au-Prince",
+    //     address: req.query.address
+    // });
+});
+
 app.get('/help/*', (req, res) => {
     res.render('404', {
         title: '404',
@@ -61,9 +88,7 @@ app.get('*', (req, res) => {
     });
 });
 
-app.get('/weather', (req, res) => {
-    res.send("It is 29 degrees out in Port-au-prince");
-});
+
 
 
 app.listen(PORT, () => console.log(`Server up on port ${PORT}`));
